@@ -1,33 +1,51 @@
-function demo(varargin)
+%function demo(varargin)
 %% Look through ResNet
 % Hang Zhang
-opts.model = 'imagenet-resnet-50-dag.mat' ; 
-opts = vl_argparse(opts, varargin) ;
+clear; close all;
 
-imgID = 2; % 1 or 2
-img = imread(['img' num2str(imgID) '.jpg']);
+opts.model = 'imagenet-resnet-50-dag.mat' ; 
+%opts = vl_argparse(opts, varargin) ;
+
+%imgID = 2; % 1 or 2
+%img = imread(['img' num2str(imgID) '.jpg']);
+%img = imread('peppers.png') ;%
+img = imread('data/ILSVRC2012_test_00000437.JPEG');
+if size(img,3) == 1
+    img = cat(3, img, img, img);
+end
 img = imresize(img, [256 256]);
-online = 1; % whether extract features online or load pre-extracted features
 
 % load the CAM model and extract features
 net = dagnn.DagNN.loadobj(load(opts.model));
+net.mode = 'test' ;
+
 index = net.getLayerIndex('fc1000');
 pname = net.layers(index).params{1};
-weights_LR = net.getParam(pname).value;
+weights_LR = squeeze(net.getParam(pname).value);
 
 img_prepared = prepare_image(net, img);
+
 net.eval({'data',img_prepared}) ;
-scores = net.forward({prepare_image(img)});% extract conv features online
-activation_lastconv = net.blobs('CAM_conv').get_data();
-scores = scores{1};
+scores = net.vars(net.getVarIndex('prob')).value ;
+scores = squeeze(gather(scores)) ;
+scores = mean(scores,2);
 
+for i=1:3
+    net.removeLayer(net.layers(end).name);
+end
+net.eval({'data',img_prepared}) ;
 
+activation_lastconv = net.vars(end).value;
+categories = net.meta.classes.description;  
 
+topNum = 3; % generate heatmap for top X prediction results
 
-topNum = 5; % generate heatmap for top X prediction results
-scoresMean = mean(scores,2);
-[value_category, IDX_category] = sort(scoresMean,'descend');
-[curCAMmapAll] = returnCAMmap(activation_lastconv, weights_LR(:,IDX_category(1:topNum)));
+[value_category, IDX_category] = sort(scores,'descend');
+
+value_category = value_category(1:topNum);
+IDX_category = IDX_category(1:topNum);
+
+[curCAMmapAll] = returnCAMmap(activation_lastconv, weights_LR(:,IDX_category));
 
 curResult = im2double(img);
 curPrediction = '';
@@ -40,14 +58,12 @@ for j=1:topNum
     curHeatMap = im2double(curHeatMap);
 
     curHeatMap = map2jpg(curHeatMap,[], 'jet');
-    curHeatMap = im2double(img)*0.2+curHeatMap*0.7;
+    curHeatMap = im2double(img)*0.3+curHeatMap*0.6;
     curResult = [curResult ones(size(curHeatMap,1),8,3) curHeatMap];
     curPrediction = [curPrediction ' --top'  num2str(j) ':' categories{IDX_category(j)}];
     
 end
-figure,imshow(curResult);title(curPrediction)
-
-if online==1
-    caffe.reset_all();
-end
+figure;
+imshow(curResult);
+title(curPrediction)
 
