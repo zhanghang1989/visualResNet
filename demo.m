@@ -3,7 +3,7 @@ function demo(varargin)
 % Hang Zhang
 close all;
 
-opts.model = 'imagenet-resnet-50-dag.mat' ; 
+opts.model = 50;
 opts.img = 'peppers.png';
 opts.topN = 4;
 opts = vl_argparse(opts, varargin) ;
@@ -15,8 +15,19 @@ if size(img,3) == 1
 end
 img = imresize(img, [256 256]);
 
-% load the CAM model and extract features
-net = dagnn.DagNN.loadobj(load(opts.model));
+switch opts.model
+    case {50, 101, 152}, 
+        modelpath = sprintf('imagenet-resnet-%d-dag.mat', opts.model) ; 
+        url = sprintf('http://www.vlfeat.org/matconvnet/models/imagenet-resnet-%d-dag.mat', opts.model) ;
+    otherwise, error('Model not support!')
+end
+
+if ~exist(modelpath, 'file')
+  fprintf('downloading from %s\n', modelpath) ;
+  urlwrite(url, modelpath) ;
+end
+
+net = dagnn.DagNN.loadobj(load(modelpath));
 net.mode = 'test' ;
 
 index = net.getLayerIndex('fc1000');
