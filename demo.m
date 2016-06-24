@@ -1,20 +1,16 @@
 function demo(varargin)
 %% Look through ResNet
 % Hang Zhang
-close all;
+addpath utils
+run dependencies/matconvnet/matlab/vl_setupnn.m
+run dependencies/vlfeat/toolbox/vl_setup.m
 
 opts.model = 50;
 opts.img = 'peppers.png';
 opts.topN = 4;
 opts = vl_argparse(opts, varargin) ;
 
-img = imread(opts.img) ;%
-
-if size(img,3) == 1
-    img = cat(3, img, img, img);
-end
-img = imresize(img, [256 256]);
-
+%% prepare image and the model
 switch opts.model
     case {50, 101, 152}, 
         modelpath = sprintf('imagenet-resnet-%d-dag.mat', opts.model) ; 
@@ -34,6 +30,11 @@ index = net.getLayerIndex('fc1000');
 pname = net.layers(index).params{1};
 weights_LR = squeeze(net.getParam(pname).value);
 
+img = imread(opts.img) ;
+if size(img,3) == 1
+    img = cat(3, img, img, img);
+end
+img = imresize(img, [256 256]);
 img_prepared = prepare_image(net, img);
 
 net.eval({'data',img_prepared}) ;
@@ -77,4 +78,3 @@ end
 figure;
 imshow(curResult);
 title(curPrediction)
-
