@@ -1,15 +1,15 @@
-%function demo(varargin)
+function demo(varargin)
 %% Look through ResNet
 % Hang Zhang
-clear; close all;
+close all;
 
 opts.model = 'imagenet-resnet-50-dag.mat' ; 
-%opts = vl_argparse(opts, varargin) ;
+opts.img = 'peppers.png';
+opts.topN = 4;
+opts = vl_argparse(opts, varargin) ;
 
-%imgID = 2; % 1 or 2
-%img = imread(['img' num2str(imgID) '.jpg']);
-%img = imread('peppers.png') ;%
-img = imread('data/ILSVRC2012_test_00000437.JPEG');
+img = imread(opts.img) ;%
+
 if size(img,3) == 1
     img = cat(3, img, img, img);
 end
@@ -38,7 +38,7 @@ net.eval({'data',img_prepared}) ;
 activation_lastconv = net.vars(end).value;
 categories = net.meta.classes.description;  
 
-topNum = 3; % generate heatmap for top X prediction results
+topNum = opts.topN; % generate heatmap for top X prediction results
 
 [value_category, IDX_category] = sort(scores,'descend');
 
