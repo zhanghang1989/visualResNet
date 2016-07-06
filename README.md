@@ -16,6 +16,12 @@ If you have problem with compiling, please refer to the [link](http://zhanghang1
 ```matlab
 demo
 ```
+
+- Visualize Multiple Images:
+```matlab
+visual('data', 'path/to/your/files', 'num', 30)
+```
+
 ### Examples
 
 <div style="text-align:center">
