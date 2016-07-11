@@ -85,8 +85,8 @@ for idx = 1:opts.num
     imshow(curResult);
     title(curPrediction)
     drawnow ;
-    savePath = fullfile('data', sprintf('%d.pdf', idx));
-    print(savePath, '-dpdf') ;
+    savePath = fullfile('images', sprintf('%d.png', idx));
+    print(savePath, '-dpng') ;
 end
 
 % -------------------------------------------------------------------------
