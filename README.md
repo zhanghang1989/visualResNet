@@ -1,8 +1,9 @@
 ## visualResNet
 Curious about where is the ResNet looking at? This repo visualizes the class specific saliency map or discriminative location. 
 It is MatConvNet re-implementation of [Learning Deep Features for Discriminative Localization, Bolei Zhou et. al.](http://arxiv.org/abs/1512.04150), 
-without modifying the network or re-training. (Torch re-implementation can be found at this [repo](https://github.com/zhanghang1989/visualResNet_torch).) We look directly through the ResNet to see the world.
+without modifying the network or re-training. We look directly through the ResNet to see the world.
 
+:x: **I have stopped maintaining this repo. If you are interested, please visit our [Torch implementation](https://github.com/zhanghang1989/visualResNet_torch).**
 
 ### Get Started
 
